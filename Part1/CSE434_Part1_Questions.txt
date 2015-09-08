@@ -1,0 +1,6 @@
+1. What are the advantages/disadvantages of concurrent, connection oriented server?
+	Advantages:
+
+	Disadvantages:
+
+2. What is the appropriate use of concurrent, connection oriented server?
