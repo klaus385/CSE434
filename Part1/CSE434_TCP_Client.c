@@ -1,5 +1,5 @@
 /***********************************************
- * Authors: Katie Gosse, Emily Faulkner
+ * Authors: Katie Gosse, Emily Falkner
  * Course: CSE 434, Computer Networks
  * Semester: Fall 2015
  * Project Part: 1
