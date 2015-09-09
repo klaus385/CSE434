@@ -103,7 +103,96 @@ int main (int argc, char *argv[])
 	// Bind the socket to an address
 	if (bind(sock_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) < 0)
 		error("ERROR: Unsuccessful socket binding. Exiting now.");
+
+	/*******************************************************************
+	 * Concurrent Servers:
+	 * 1. Listen for client request
+	 * 2. Accept client request
+	 * 3. Create a child process to handle client (forking)
+	 * 4. Parent continues to listen
+	 * 5. Repeat
+	 *******************************************************************/
+ 
+	/*******************************************************************
+	 * int listen (int sockfd, int backlog);
+	 * sockfd
+	 *	socket file descripter, i.e. socket_fd
+	 * backlog
+	 *	max number of queued pending connections, usually set to 5
+	 * return value
+	 *	if successful, 0
+	 *	else -1
+	 * note:
+	 *	sockfd is passive, meaning it is able to accept incoming
+	 *	connection requests
+	 *******************************************************************/
+	// Have the server listen
+	if (listen(socket_fd, 5) < 0)
+		error ("ERROR: Socket unable to listen. Exiting now.");
 	
+	while(1)
+	{
+		/*******************************************************************
+		 * int accept (int sockfd, struct sockaddr *addr, socklen_t *addrlen);
+		 * sockfd
+		 *	socket file descripter, i.e. socket_fd
+		 * *addr
+		 *	pointer to the client address
+		 * *addrlen
+		 *	pointer to the size of the client address
+		 * return value
+		 *	if succesful, non-negative integer
+		 *	else -1
+		 * note:
+		 *	temporarily suspends the (listening) server from doing
+		 *	anything until a client is connected
+		 *******************************************************************/
+		// Server accepts client
+		client_addr_sz = sizeof(client_addr);
+		new_socket_fd = accept(socket_fd, (struct sockaddr *) &client_addr, &client_addr_sz);
+		
+		// Throw an error if the connection was unsuccessful
+		if (new_socket_fd < 0) 
+	 		error("ERROR: Could not accept client. Exiting now.");
+
+		/*******************************************************************
+		 * int fork (void);
+		 * return value
+		 *	if successful, child process is given a PID, which is
+		 *	returned to the parent and a 0 is returned to the child
+		 *	else, -1 is returned to parent
+		 *******************************************************************/
+		// If the connection was successful, create a child process to handle the client
+		// and check if child process was created
+		if (fork() < 0)
+			error("ERROR: Could not create child process. Exiting now");
+		
+		/*******************************************************************
+		 * int close (int fd);
+		 * fd
+		 *	file descriptor, in this case a socket file descripter
+		 * return value
+		 *	if successful, 0
+		 *	else -1
+		 * note:
+		 *	does not remove socket, only frees it up so it can be
+		 *	reused (for future child processes)
+		 *******************************************************************/
+		// Close, or free, the listening socket (socket_fd)
+		if (close(socket_fd) < 0)
+			error("ERROR: Could not close listening socket. Exiting now.");
+
+		// Perform read/write commands for client
+
+
+
+
+
+
+		// Close the client socket (new_socket_fd)
+		close(new_socket_fd);
+	}
+
 	return 0;
 }
 
