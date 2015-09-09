@@ -86,7 +86,7 @@ int main (int argc, char *argv[])
 	memset((char *) &server_addr, '0', sizeof(server_addr));
 	server_addr.sin_family = AF_INET; // Always use AF_INET
 	server_addr.sin_port = htons(port_num); // Converts port_num from host byte order to network byte order
-	server_addr.sin_addr.sin_addr = INADDR_ANY; // Sets the IP address of the server to the IP address of the host machine
+	server_addr.sin_addr.s_addr = INADDR_ANY; // Sets the IP address of the server to the IP address of the host machine
 	
 	/*******************************************************************
 	 * int bind (int sockfd, const struct sockaddr *addr, socklen_t addrlen);
@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 	 *	else -1
 	 *******************************************************************/
 	// Bind the socket to an address
-	if (bind(sock_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) < 0)
+	if (bind(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) < 0))
 		error("ERROR: Unsuccessful socket binding. Exiting now.");
 
 	/*******************************************************************
@@ -204,5 +204,5 @@ int main (int argc, char *argv[])
 void error (char *msg)
 {
 	perror(msg);
-	exit(EXIT_FAILIURE); 
+	exit(1); 
 }
