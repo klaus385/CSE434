@@ -58,7 +58,8 @@ int main (int argc, char *argv[])
 
 	char buffer[256];
 
-	portno = 8888; //atoi() function can be used to convert port number from string to int
+	  //made changes
+	portno = atoi(argv[1]); //atoi() function can be used to convert port number from string to int
 
 	//create socket
 	//takes 3 arguments - address domain, type of socet, protocol (zeror allows the OS to choose the appropriate protocols based on type of socket)
