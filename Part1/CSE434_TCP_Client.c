@@ -38,6 +38,7 @@ int main (int argc, char *argv[])
 {
 	//Variable declarations
 	int sockfd; //sockfd is a file descriptor
+	int clientno; //clientno stores the client number
 	int portno; //portno stores the port number on which the server accepts the connections.
 	int n;
 
@@ -62,7 +63,9 @@ int main (int argc, char *argv[])
 	char buffer[256];
 
     //made changes
+    clientno = atoi(argv[2]);
 	portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
+
 
 	//create socket
 	//takes 3 arguments - address domain, type of socet, protocol (zeror allows the OS to choose the appropriate protocols based on type of socket)
@@ -85,7 +88,7 @@ int main (int argc, char *argv[])
 
 	//set server address buffer with xeros using bzero or memset
 	//two arguments - pointer to buffer and sizeof buffer
-	bzero((char*) &serv_addr, sizeof(serv_addr));
+	memset((char*) &serv_addr, '0', sizeof(serv_addr));
 
 	//sets the fields in serv_addr and for the address family
     serv_addr.sin_family = AF_INET;
@@ -107,7 +110,7 @@ int main (int argc, char *argv[])
     printf("Please enter the message: ");
 
     //After a connection a client has succesfully connected to the server initilize buffer using bzero()
-    bzero(buffer,256);
+    memset(buffer,'0', 256);
 
     //set buffer to the message entered on console at client end for a maximum of 255 characters
     fgets(buffer, 255, stdin);
@@ -123,7 +126,7 @@ int main (int argc, char *argv[])
 
     //server can read and write after connection has been established
     //everything writen by client will be read by server and vice versa
-    bzero(buffer,256);
+    memset(buffer,'0', 256);
     n = read(sockfd,buffer,255);
     if (n < 0)
     {
