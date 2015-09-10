@@ -74,7 +74,7 @@ int main (int argc, char *argv[])
 
 	//gethostname() takes a name as an argument and returns a pointer to a hostent containing information about that host
 	//name is taken as argument from user
-	server = gethostname(argv[1], sizeof(atoi(argv[1])));
+	server = gethostbyname(argv[1]);
 
 	//If hostent structure is NULL, the system could not locate host name
 	if (server == NULL)
@@ -113,7 +113,7 @@ int main (int argc, char *argv[])
     fgets(buffer, 255, stdin);
 
     //write from the buffer into the socket
-    n = write(sockfd, buffer, strlent(buffer));
+    n = write(sockfd, buffer, strlen(buffer));
 
     //check if write was sucessful
     if (n <0)
