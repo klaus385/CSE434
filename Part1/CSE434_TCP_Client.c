@@ -41,6 +41,9 @@ int main (int argc, char *argv[])
 	int portno; //portno stores the port number on which the server accepts the connections.
 	int n;
 
+	//serv_addr will contain the address of the server
+    struct sockaddr_in serv_addr;
+
 	//variable server is a pointer to a structure of type hostent
 	/*
 	struct  hostent
@@ -58,8 +61,8 @@ int main (int argc, char *argv[])
 
 	char buffer[256];
 
-	  //made changes
-	portno = atoi(argv[1]); //atoi() function can be used to convert port number from string to int
+    //made changes
+	portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
 
 	//create socket
 	//takes 3 arguments - address domain, type of socet, protocol (zeror allows the OS to choose the appropriate protocols based on type of socket)
@@ -71,12 +74,12 @@ int main (int argc, char *argv[])
 
 	//gethostname() takes a name as an argument and returns a pointer to a hostent containing information about that host
 	//name is taken as argument from user
-	server = gethostname(argv[1]);
+	server = gethostname(argv[1], sizeof(atoi(argv[1])));
 
 	//If hostent structure is NULL, the system could not locate host name
 	if (server == NULL)
 	{
-		fprintf(stderr, "ERROR NO SUCH HOST\n"
+		fprintf(stderr, "ERROR NO SUCH HOST\n");
 		exit(0);
 	}
 
@@ -89,7 +92,7 @@ int main (int argc, char *argv[])
 
     //comies length bytes from s1 to s2
     bcopy((char *)server->h_addr,
-           (char *)&server_addr.sin_addr.s_addr,
+           (char *)&serv_addr.sin_addr.s_addr,
            server->h_length);
 
     //contain the port number
@@ -97,7 +100,7 @@ int main (int argc, char *argv[])
 
     //connect is callled by the client to establish connection to the server
     //takes 3 argments: socket file descripter,address of the host that it wants to connect to, and the size of this address
-    if(connect(sockfd, (struck sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+    if(connect(sockfd, (struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
     {
         error("ERROR CONNECTING");
     }
@@ -110,12 +113,12 @@ int main (int argc, char *argv[])
     fgets(buffer, 255, stdin);
 
     //write from the buffer into the socket
-    n = write(sockfd, buffer, strlent(buffer)):
+    n = write(sockfd, buffer, strlent(buffer));
 
     //check if write was sucessful
     if (n <0)
     {
-        error("ERROR WRITING TO SOCKET"):
+        error("ERROR WRITING TO SOCKET");
     }
 
     //server can read and write after connection has been established
@@ -124,9 +127,9 @@ int main (int argc, char *argv[])
     n = read(sockfd,buffer,255);
     if (n < 0)
     {
-        error("ERROR READIN FROM SOCKET");
+        error("ERROR READING FROM SOCKET");
     }
-    printf("%s\n",buffer):
+    printf("%s\n",buffer);
 
     //close connections using file descriptrs
 	close(sockfd);
