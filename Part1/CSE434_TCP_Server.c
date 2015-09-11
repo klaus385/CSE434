@@ -101,7 +101,7 @@ int main (int argc, char *argv[])
 	 *	else -1
 	 *******************************************************************/
 	// Bind the socket to an address
-	if (bind(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr) < 0))
+	if (bind(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
 		error("ERROR: Unsuccessful socket binding. Exiting now.");
 
 	/*******************************************************************
@@ -183,12 +183,15 @@ int main (int argc, char *argv[])
 			error("ERROR: Could not close listening socket. Exiting now.");
 
 		// Perform read/write commands for client
+		memset(buffer, '0', sizeof(buffer));
+		if((rw_num = read(new_socket_fd, buffer, 255) < 0))
+			error("ERROR: Could not read from client. Exiting now.");
 
-
-
-
-
-
+		printf("Client message is \"%s\"", buffer);
+		
+		if ((rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) < 0))
+			error("ERROR: Could not write to client. Exiting now.");
+		
 		// Close the client socket (new_socket_fd)
 		close(new_socket_fd);
 	}
