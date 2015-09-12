@@ -43,7 +43,7 @@ int main (int argc, char *argv[])
 	int n;
 
 	//serv_addr will contain the address of the server
-    struct sockaddr_in serv_addr;
+	struct sockaddr_in serv_addr;
 
 	//variable server is a pointer to a structure of type hostent
 	/*
@@ -62,13 +62,17 @@ int main (int argc, char *argv[])
 
 	char buffer[256];
 
-    //made changes
-    clientno = atoi(argv[2]);
+	if (argc != 4)
+		error("ERROR WITH ARGUMENTS");
+
+    	//made changes
+	clientno = atoi(argv[2]);
 	portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
 
 
 	//create socket
-	//takes 3 arguments - address domain, type of socet, protocol (zeror allows the OS to choose the appropriate protocols based on type of socket)
+	//takes 3 arguments - address domain, type of socet, protocol (zeror allows the OS to choose
+	//the appropriate protocols based on type of socket)
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 	{
@@ -88,53 +92,53 @@ int main (int argc, char *argv[])
 
 	//set server address buffer with xeros using bzero or memset
 	//two arguments - pointer to buffer and sizeof buffer
-	memset((char*) &serv_addr, '0', sizeof(serv_addr));
+	memset((char*) &serv_addr, 0, sizeof(serv_addr));
 
 	//sets the fields in serv_addr and for the address family
-    serv_addr.sin_family = AF_INET;
+	serv_addr.sin_family = AF_INET;
 
-    //comies length bytes from s1 to s2
-    bcopy((char *)server->h_addr,
+	//copies length bytes from s1 to s2
+	bcopy((char *)server->h_addr,
            (char *)&serv_addr.sin_addr.s_addr,
            server->h_length);
 
-    //contain the port number
-    serv_addr.sin_port = htons(portno);
+	//contain the port number
+	serv_addr.sin_port = htons(portno);
 
-    //connect is callled by the client to establish connection to the server
-    //takes 3 argments: socket file descripter,address of the host that it wants to connect to, and the size of this address
-    if(connect(sockfd, (struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
-    {
-        error("ERROR CONNECTING");
-    }
-    printf("Please enter the message: ");
+	//connect is callled by the client to establish connection to the server
+	//takes 3 argments: socket file descripter,address of the host that it wants to connect to, and the size of this address
+	if(connect(sockfd, (struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+	{
+        	error("ERROR CONNECTING");
+	}
+	printf("Please enter the message: ");
 
-    //After a connection a client has succesfully connected to the server initilize buffer using bzero()
-    memset(buffer,'0', 256);
+	//After a connection a client has succesfully connected to the server initilize buffer using bzero()
+	memset(buffer, 0, sizeof(buffer));
 
-    //set buffer to the message entered on console at client end for a maximum of 255 characters
-    fgets(buffer, 255, stdin);
+	//set buffer to the message entered on console at client end for a maximum of 255 characters
+	fgets(buffer, 255, stdin);
 
-    //write from the buffer into the socket
-    n = write(sockfd, buffer, strlen(buffer));
+	//write from the buffer into the socket
+	n = write(sockfd, buffer, strlen(buffer));
 
-    //check if write was sucessful
-    if (n <0)
-    {
-        error("ERROR WRITING TO SOCKET");
-    }
+	//check if write was sucessful
+	if (n <0)
+	{
+        	error("ERROR WRITING TO SOCKET");
+	}
 
-    //server can read and write after connection has been established
-    //everything writen by client will be read by server and vice versa
-    memset(buffer,'0', 256);
-    n = read(sockfd,buffer,255);
-    if (n < 0)
-    {
-        error("ERROR READING FROM SOCKET");
-    }
-    printf("%s\n",buffer);
-
-    //close connections using file descriptrs
-	close(sockfd);
+	//server can read and write after connection has been established
+	//everything writen by client will be read by server and vice versa
+	memset(buffer, 0, 256);
+	n = read(sockfd,buffer,255);
+	if (n < 0)
+	{
+        	error("ERROR READING FROM SOCKET");
+	}
+	printf("%s\n",buffer);
+	//close connections using file descriptrs
+	//close(sockfd);
+	
 	return 0;
 }
