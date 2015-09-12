@@ -8,13 +8,7 @@
  * Description: ???
  *****************************************************************/
 
-#include <stdio.h>      // used for input/output
-#include <stdlib.h>     // contains many standard C functions, like exit()
-#include <string.h>     // contains defintions for string manipulation
-#include <unistd.h>	// gives access to POSIX for sys calls
-#include <sys/types.h>  // contains definitions of numerous sys call data types
-#include <sys/socket.h> // includes structure definitions for socket types
-#include <netinet/in.h> // contains structures/constants for internet domain addresses
+#include "CSE434_TCP_Server.h"
 
 /*******************************************************************
  * Steps to create a server:
@@ -27,14 +21,13 @@
  * 7. Repeat steps 4 - 7
  *****************************************************************/
 
-void error (char *msg);
-
 int main (int argc, char *argv[])
 {
 	// Variable lists - broken up for clarity
 	int socket_fd, new_socket_fd; // File descripters - stores the returned values from socket() and accept()
 	int  port_num; // Port number on which the server accepts connections
 	int rw_num; // Return value for read()/write() calls
+	int pid; // process ID of the child created by fork()
 	char buffer[256]; // Characters read from the socket connection
 	struct sockaddr_in server_addr, client_addr; // Structure for handling iternet addresses - see below
 	socklen_t client_addr_sz; // Size of the address of the client (needed for accept()) - found in sys/socket.h
@@ -56,8 +49,9 @@ int main (int argc, char *argv[])
 
 	// Server needs one argument from command line - the port number
 	if (argv[1] == NULL)
+	{
 		error("ERROR: No port provided. Exiting now.");
-
+	}
 	// Possible check for correct port number???????????????????????????????????????????????????????????
 	
 	// Grab port number from argv and convert to an int
@@ -78,12 +72,13 @@ int main (int argc, char *argv[])
 	 *	else -1
 	 *******************************************************************/
 	// Create a socket or "doorway for communication" and check if the socket opened successfully
-	socket_fd = socket(AF_INET, SOCK_STREAM, 0);
-	if (socket_fd < 0)
+	//socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if ((socket_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+	{
 		error("ERROR: Unsuccessful socket opening. Exiting now.");
-
+	}
 	// Make sure server_addr buffer is clear and set the struct variables
-	memset((char *) &server_addr, '0', sizeof(server_addr));
+	memset((char *) &server_addr, 0, sizeof(server_addr));
 	server_addr.sin_family = AF_INET; // Always use AF_INET
 	server_addr.sin_port = htons(port_num); // Converts port_num from host byte order to network byte order
 	server_addr.sin_addr.s_addr = INADDR_ANY; // Sets the IP address of the server to the IP address of the host machine
@@ -101,8 +96,10 @@ int main (int argc, char *argv[])
 	 *	else -1
 	 *******************************************************************/
 	// Bind the socket to an address
-	if (bind(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0)
+	if (bind(socket_fd, (struct sockaddr *) &server_addr, sizeof(server_addr)) == -1)
+	{
 		error("ERROR: Unsuccessful socket binding. Exiting now.");
+	}
 
 	/*******************************************************************
 	 * Concurrent Servers:
@@ -127,11 +124,15 @@ int main (int argc, char *argv[])
 	 *	connection requests
 	 *******************************************************************/
 	// Have the server listen
-	if (listen(socket_fd, 5) < 0)
+	if (listen(socket_fd, 5) == -1)
+	{
 		error ("ERROR: Socket unable to listen. Exiting now.");
-	
+	}
+
 	while(1)
 	{
+		printf("Waiting for a client...");
+		
 		/*******************************************************************
 		 * int accept (int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 		 * sockfd
@@ -152,8 +153,11 @@ int main (int argc, char *argv[])
 		new_socket_fd = accept(socket_fd, (struct sockaddr *) &client_addr, &client_addr_sz);
 		
 		// Throw an error if the connection was unsuccessful
-		if (new_socket_fd < 0) 
+		if (new_socket_fd == -1)
+		{
+			printf("new_socket_fd is %d\n", new_socket_fd);
 	 		error("ERROR: Could not accept client. Exiting now.");
+		}
 
 		/*******************************************************************
 		 * int fork (void);
@@ -163,39 +167,55 @@ int main (int argc, char *argv[])
 		 *	else, -1 is returned to parent
 		 *******************************************************************/
 		// If the connection was successful, create a child process to handle the client
-		// and check if child process was created
-		if (fork() < 0)
-			error("ERROR: Could not create child process. Exiting now");
-		
-		/*******************************************************************
-		 * int close (int fd);
-		 * fd
-		 *	file descriptor, in this case a socket file descripter
-		 * return value
-		 *	if successful, 0
-		 *	else -1
-		 * note:
-		 *	does not remove socket, only frees it up so it can be
-		 *	reused (for future child processes)
-		 *******************************************************************/
-		// Close, or free, the listening socket (socket_fd)
-		if (close(socket_fd) < 0)
-			error("ERROR: Could not close listening socket. Exiting now.");
+		// and check if child process was created		
+		if ((pid = fork()) == -1)
+		{
+			error("ERROR: Could not create child process. Exiting now.");
+		}
+		else if (pid == 0)
+		{
+			/******************************************************************
+			 * int close (int fd);
+			 * fd
+			 *	file descriptor, in this case a socket file descripter
+			 * return value
+			 *	if successful, 0
+			 *	else -1
+			 * note:
+			 *	does not remove socket, only frees it up so it can be
+			 *	reused (for future child processes)
+			 *******************************************************************/
+			// Close, or free, the listening socket (socket_fd)
+			if (close(socket_fd) == -1)
+			{
+				error("ERROR: Could not close listening socket. Exiting now.");
+			}
 
-		// Perform read/write commands for client
-		memset(buffer, '0', sizeof(buffer));
-		if((rw_num = read(new_socket_fd, buffer, 255) < 0))
-			error("ERROR: Could not read from client. Exiting now.");
+			// Perform read/write commands for client
+			memset(buffer, 0, sizeof(buffer));
+			if(rw_num = read(new_socket_fd, buffer, sizeof(buffer)) == -1)
+			{
+				error("ERROR: Could not read from client. Exiting now.");
+			}
 
-		printf("Client message is \"%s\"", buffer);
-		
-		if ((rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) < 0))
-			error("ERROR: Could not write to client. Exiting now.");
-		
-		// Close the client socket (new_socket_fd)
-		close(new_socket_fd);
+			printf("Client says: %s", buffer);
+			
+			if (rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) == -1)
+			{
+				error("ERROR: Could not write to client. Exiting now.");
+			}
+		}
+
+		//else
+			if (close(new_socket_fd) == -1)
+			{
+				error("ERROR: Could not close client socket. Exiting now.");
+			}
+		memset((char*) &client_addr, 0, client_addr_sz);	
 	}
 
+	//close(new_socket_fd);
+	
 	return 0;
 }
 
