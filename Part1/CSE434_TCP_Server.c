@@ -221,19 +221,17 @@ int main (int argc, char *argv[])
 				memset(buffer, 0, sizeof(buffer));
 				while (read(new_socket_fd, buffer, sizeof(buffer)) != -1)
 				{
-				//	if(rw_num = read(new_socket_fd, buffer, sizeof(buffer)) == -1)
-				//	{
-				//		error("ERROR: Could not read from client. Exiting now.");
-				//	}
-		
-					printf("Client (%d) says: %s", client_id[cid], buffer);
-				
-					if (rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) == -1)
+					if (buffer != NULL)
 					{
-						error("ERROR: Could not write to client. Exiting now.");
-					}
+						printf("Client (%d) says: %s", client_id[cid], buffer);
+				
+						if (rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) == -1)
+						{
+							error("ERROR: Could not write to client. Exiting now.");
+						}
 
-					memset(buffer, 0, sizeof(buffer));
+						memset(buffer, 0, sizeof(buffer));
+					}
 				}
 				
 				++cid;
