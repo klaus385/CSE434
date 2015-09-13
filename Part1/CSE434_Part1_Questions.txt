@@ -1,6 +1,7 @@
 1. What are the advantages/disadvantages of concurrent, connection oriented server?
-	Advantages:
+	Advantages: Can handle mutile requests at a time and the individual requests can be of any size or complexity.
 
-	Disadvantages:
+	Disadvantages: They are difficult to design/build. Can overheat in handshaking, uses a separate socket for each 		connection.
 
 2. What is the appropriate use of concurrent, connection oriented server?
+	When you have to process many requests at the same time.
