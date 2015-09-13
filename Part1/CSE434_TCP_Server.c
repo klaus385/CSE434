@@ -221,7 +221,7 @@ int main (int argc, char *argv[])
 				memset(buffer, 0, sizeof(buffer));
 				while (read(new_socket_fd, buffer, sizeof(buffer)) != -1)
 				{
-					if (buffer != NULL)
+					if (buffer[0] != '\0' )
 					{
 						printf("Client (%d) says: %s", client_id[cid], buffer);
 				
