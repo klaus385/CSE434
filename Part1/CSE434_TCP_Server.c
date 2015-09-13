@@ -28,6 +28,9 @@ int main (int argc, char *argv[])
 	int  port_num; // Port number on which the server accepts connections
 	int rw_num; // Return value for read()/write() calls
 	int pid; // process ID of the child created by fork()
+	int i, closed = 0; // Keeps track if the connected was closed due to duplicate client
+	int cid = 0; // Keeps track of where the client id is stored in the array
+	int client_id[25]; // An inefficient but easy way to store up to 25 client ID numbers
 	char buffer[256]; // Characters read from the socket connection
 	struct sockaddr_in server_addr, client_addr; // Structure for handling iternet addresses - see below
 	socklen_t client_addr_sz; // Size of the address of the client (needed for accept()) - found in sys/socket.h
@@ -131,8 +134,6 @@ int main (int argc, char *argv[])
 
 	while(1)
 	{
-		printf("Waiting for a client...");
-		
 		/*******************************************************************
 		 * int accept (int sockfd, struct sockaddr *addr, socklen_t *addrlen);
 		 * sockfd
@@ -155,9 +156,31 @@ int main (int argc, char *argv[])
 		// Throw an error if the connection was unsuccessful
 		if (new_socket_fd == -1)
 		{
-			printf("new_socket_fd is %d\n", new_socket_fd);
 	 		error("ERROR: Could not accept client. Exiting now.");
 		}
+		closed = 0;
+
+		// Super cheap implementation of recording a client number
+		// Would never do this for real world code
+		memset(buffer, 0, sizeof(buffer));
+		if (read(new_socket_fd, buffer, sizeof(buffer)) == -1)
+		{
+			error("ERROR: Could not read client number. Exiting now.");
+		}
+		
+	//	printf("Client number is %s\n", buffer);
+
+		for (i = 0; i < 25; ++i)
+		{
+			if (atoi(buffer) == client_id[i])
+			{
+				printf("Client already connected before. Terminating connection.\n");
+				close(new_socket_fd);
+				closed = 1;
+				i = 25;
+			}
+		}
+		client_id[cid] = atoi(buffer);
 
 		/*******************************************************************
 		 * int fork (void);
@@ -167,58 +190,61 @@ int main (int argc, char *argv[])
 		 *	else, -1 is returned to parent
 		 *******************************************************************/
 		// If the connection was successful, create a child process to handle the client
-		// and check if child process was created		
-		if ((pid = fork()) == -1)
+		// and check if child process was created
+		if (closed == 0)
 		{
-			error("ERROR: Could not create child process. Exiting now.");
-		}
-		else if (pid == 0)
-		{
-			/******************************************************************
-			 * int close (int fd);
-			 * fd
-			 *	file descriptor, in this case a socket file descripter
-			 * return value
-			 *	if successful, 0
-			 *	else -1
-			 * note:
-			 *	does not remove socket, only frees it up so it can be
-			 *	reused (for future child processes)
-			 *******************************************************************/
-			// Close, or free, the listening socket (socket_fd)
-			if (close(socket_fd) == -1)
+			if ((pid = fork()) == -1)
 			{
-				error("ERROR: Could not close listening socket. Exiting now.");
+				error("ERROR: Could not create child process. Exiting now.");
+			}
+			else if (pid == 0)
+			{
+				/******************************************************************
+				 * int close (int fd);
+				 * fd
+				 *	file descriptor, in this case a socket file descripter
+				 * return value
+				 *	if successful, 0
+				 *	else -1
+				 * note:
+				 *	does not remove socket, only frees it up so it can be
+				 *	reused (for future child processes)
+				 *******************************************************************/
+				// Close, or free, the listening socket (socket_fd)
+				if (close(socket_fd) == -1)
+				{
+					error("ERROR: Could not close listening socket. Exiting now.");
+				}
+
+				while (new_socket_fd != -1)
+				{
+					// Perform read/write commands for client
+					memset(buffer, 0, sizeof(buffer));
+					if(rw_num = read(new_socket_fd, buffer, sizeof(buffer)) == -1)
+					{
+						error("ERROR: Could not read from client. Exiting now.");
+					}
+		
+					printf("Client (%d) says: %s", client_id[cid], buffer);
+				
+					if (rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) == -1)
+					{
+						error("ERROR: Could not write to client. Exiting now.");
+					}
+				}
+				
+				++cid;
 			}
 
-			while (new_socket_fd != -1)
-			{
-				// Perform read/write commands for client
-				memset(buffer, 0, sizeof(buffer));
-				if(rw_num = read(new_socket_fd, buffer, sizeof(buffer)) == -1)
-				{
-					error("ERROR: Could not read from client. Exiting now.");
-				}
-	
-				printf("Client says: %s", buffer);
-			
-				if (rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) == -1)
-				{
-					error("ERROR: Could not write to client. Exiting now.");
-				}
-			}
-		}
-
-		//else
 			if (close(new_socket_fd) == -1)
 			{
 				error("ERROR: Could not close client socket. Exiting now.");
 			}
-		memset((char*) &client_addr, 0, client_addr_sz);	
+
+			memset((char*) &client_addr, 0, client_addr_sz);
+		}	
 	}
 
-	//close(new_socket_fd);
-	
 	return 0;
 }
 
