@@ -32,8 +32,6 @@ int main (int argc, char *argv[])
 	int closed = 0; // Keeps track if the connected was closed due to duplicate client
 	int cid = 0; // Keeps track of where the client id is stored in the array
 	int client_id[25]; // An inefficient but easy way to store up to 25 client ID numbers
-	int err = 0; // Used to check if socket is still open
-	socklen_t len = sizeof(error); // Used to check if socket is still open
 	char buffer[256]; // Characters read from the socket connection
 	struct sockaddr_in server_addr, client_addr; // Structure for handling iternet addresses - see below
 	socklen_t client_addr_sz; // Size of the address of the client (needed for accept()) - found in sys/socket.h
@@ -159,6 +157,7 @@ int main (int argc, char *argv[])
 		// Throw an error if the connection was unsuccessful
 		if (new_socket_fd == -1)
 		{
+			fprintf(stderr, "error code: %s", strerror(new_socket_fd));
 	 		error("ERROR: Could not accept client. Exiting now.");
 		}
 		closed = 0;
@@ -218,15 +217,14 @@ int main (int argc, char *argv[])
 				{
 					error("ERROR: Could not close listening socket. Exiting now.");
 				}
-
-				while (getsockopt(new_socket_fd, SOL_SOCKET, SO_ERROR, &err, &len) != 0)
+				
+				memset(buffer, 0, sizeof(buffer));
+				while (read(new_socket_fd, buffer, sizeof(buffer)) != -1)
 				{
-					// Perform read/write commands for client
-					memset(buffer, 0, sizeof(buffer));
-					if(rw_num = read(new_socket_fd, buffer, sizeof(buffer)) == -1)
-					{
-						error("ERROR: Could not read from client. Exiting now.");
-					}
+				//	if(rw_num = read(new_socket_fd, buffer, sizeof(buffer)) == -1)
+				//	{
+				//		error("ERROR: Could not read from client. Exiting now.");
+				//	}
 		
 					printf("Client (%d) says: %s", client_id[cid], buffer);
 				
@@ -234,6 +232,8 @@ int main (int argc, char *argv[])
 					{
 						error("ERROR: Could not write to client. Exiting now.");
 					}
+
+					memset(buffer, 0, sizeof(buffer));
 				}
 				
 				++cid;
