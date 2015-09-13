@@ -28,9 +28,12 @@ int main (int argc, char *argv[])
 	int  port_num; // Port number on which the server accepts connections
 	int rw_num; // Return value for read()/write() calls
 	int pid; // process ID of the child created by fork()
-	int i, closed = 0; // Keeps track if the connected was closed due to duplicate client
+	int i; // Used in for loop 
+	int closed = 0; // Keeps track if the connected was closed due to duplicate client
 	int cid = 0; // Keeps track of where the client id is stored in the array
 	int client_id[25]; // An inefficient but easy way to store up to 25 client ID numbers
+	int error = 0; // Used to check if socket is still open
+	socklen_t len = sizeof(error); // Used to check if socket is still open
 	char buffer[256]; // Characters read from the socket connection
 	struct sockaddr_in server_addr, client_addr; // Structure for handling iternet addresses - see below
 	socklen_t client_addr_sz; // Size of the address of the client (needed for accept()) - found in sys/socket.h
@@ -216,7 +219,7 @@ int main (int argc, char *argv[])
 					error("ERROR: Could not close listening socket. Exiting now.");
 				}
 
-				while (new_socket_fd != -1)
+				while (getsockopt(new_socket_fd, SOL_SOCKET, &error, &len) != 0)
 				{
 					// Perform read/write commands for client
 					memset(buffer, 0, sizeof(buffer));
