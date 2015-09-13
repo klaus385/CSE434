@@ -63,7 +63,7 @@ int main (int argc, char *argv[])
 	char buffer[256];
 
 	if (argc != 4)
-		error("ERROR WITH ARGUMENTS");
+		error("ERROR: Need three arguments.");
 
     	//made changes
 	clientno = atoi(argv[2]);
@@ -111,6 +111,13 @@ int main (int argc, char *argv[])
 	{
         	error("ERROR CONNECTING");
 	}
+
+	// Send ID to server
+	if (write(sockfd, argv[2], sizeof(argv[2])) < 0)
+	{
+		perror("ERROR: Could not send client number to server.");
+	}
+
 	printf("Please enter the message: ");
 
 	//After a connection a client has succesfully connected to the server initilize buffer using bzero()
