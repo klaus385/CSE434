@@ -32,7 +32,7 @@ int main (int argc, char *argv[])
 	int closed = 0; // Keeps track if the connected was closed due to duplicate client
 	int cid = 0; // Keeps track of where the client id is stored in the array
 	int client_id[25]; // An inefficient but easy way to store up to 25 client ID numbers
-	int error = 0; // Used to check if socket is still open
+	int err = 0; // Used to check if socket is still open
 	socklen_t len = sizeof(error); // Used to check if socket is still open
 	char buffer[256]; // Characters read from the socket connection
 	struct sockaddr_in server_addr, client_addr; // Structure for handling iternet addresses - see below
@@ -219,7 +219,7 @@ int main (int argc, char *argv[])
 					error("ERROR: Could not close listening socket. Exiting now.");
 				}
 
-				while (getsockopt(new_socket_fd, SOL_SOCKET, &error, &len) != 0)
+				while (getsockopt(new_socket_fd, SOL_SOCKET, SO_ERROR, &err, &len) != 0)
 				{
 					// Perform read/write commands for client
 					memset(buffer, 0, sizeof(buffer));
