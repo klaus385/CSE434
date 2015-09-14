@@ -3,8 +3,9 @@
  * Course: CSE 434, Computer Networks
  * Semester: Fall 2015
  * Project Part: 1
- * Time Spent: 5 minutes
+ * Time Spent: ???
  * File Name: CSE434_TCP_Server.c
+ * Description: ???
  *****************************************************************/
 
 #include <stdio.h>      // used for input/output

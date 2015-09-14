@@ -3,9 +3,8 @@
  * Course: CSE 434, Computer Networks
  * Semester: Fall 2015
  * Project Part: 1
- * Time Spent: ???
+ * Time Spent: ~12.5 hours
  * File Name: CSE434_TCP_Server.c
- * Description: ???
  *****************************************************************/
 
 #include "CSE434_TCP_Server.h"
