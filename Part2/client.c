@@ -2,19 +2,13 @@
  * Authors: Katie Gosse, Emily Falkner
  * Course: CSE 434, Computer Networks
  * Semester: Fall 2015
- * Project Part: 1
- * Time Spent: ~5 hours
+ * Project Part: 2
+ * Time Spent: 8 hours
  * File Name: CSE434_TCP_Client.c
  **********************************************/
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/socket.h> // Needed for socket system call
-#include <sys/types.h>  // Contains numerous data types used in system calls
-#include <netinet/in.h> // Needed for internet domain address constants/structs
-#include <netdb.h>	// Needed to define the structure hostent
+#include "client.h"
+
 
 /***********************************************
  * Client Program Steps:
@@ -59,7 +53,7 @@ int main (int argc, char *argv[])
 
 	struct hostent *server;
 
-	char buffer[256];
+	char buffer[1024];
 
 	if (argc != 4)
 		error("ERROR: Need three arguments.");
@@ -117,34 +111,47 @@ int main (int argc, char *argv[])
 		perror("ERROR: Could not send client number to server.");
 	}
 
-	printf("Please enter the message: ");
-
-	//After a connection a client has succesfully connected to the server initilize buffer using bzero()
-	memset(buffer, 0, sizeof(buffer));
-
-	//set buffer to the message entered on console at client end for a maximum of 255 characters
-	fgets(buffer, 255, stdin);
-
-	//write from the buffer into the socket
-	n = write(sockfd, buffer, strlen(buffer));
-
-	//check if write was sucessful
-	if (n <0)
+	while(1)	
 	{
-        	error("ERROR WRITING TO SOCKET");
-	}
+		printf("Please enter the file name and mode of operation: ");
+		//After a connection a client has succesfully connected to the server initilize buffer using bzero()
+		memset(buffer, 0, sizeof(buffer));
+		
+		//set buffer to the message entered on console at client end for a maximum of 255 characters
+		fgets(buffer, 255, stdin);
 
-	//server can read and write after connection has been established
-	//everything writen by client will be read by server and vice versa
-	memset(buffer, 0, 256);
-	n = read(sockfd,buffer,255);
-	if (n < 0)
-	{
-        	error("ERROR READING FROM SOCKET");
+		//write from the buffer into the socket
+		n = write(sockfd, buffer, strlen(buffer));
+
+		//check if write was sucessful
+		if (n <0)
+		{
+	        	error("ERROR SENDING FILE TO SOCKET");
+		}
+
+		//server can read and write after connection has been established
+		//everything writen by client will be read by server and vice versa
+		memset(buffer, 0, 256);
+		n = read(sockfd,buffer,255);
+		if (n < 0)
+		{
+	        	error("ERROR READING FROM SOCKET");
+		}
+		printf("%s\n",buffer);
+		//close connections using file descriptrs
+		//close(sockfd);
+
+
+		//open file to read
+		
+		
+		memset(buffer, 0, sizeof(buffer));
+		fgets(buffer, 255, stdin);
+		if(buffer[0] == 'N')
+		{
+			return 0;
+		}
 	}
-	printf("%s\n",buffer);
-	//close connections using file descriptrs
-	//close(sockfd);
 	
 	return 0;
 }
