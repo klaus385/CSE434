@@ -120,9 +120,10 @@ int main (int argc, char *argv[])
 		memset(buffer, 0, sizeof(buffer));
 		
 		//set buffer to the message entered on console at client end for a maximum of 255 characters
-		//fgets(buffer, 255, stdin);
-		filename = argv[1];
-		op = argv[2];
+		fgets(buffer, 255, stdin);
+		char *first_part = strtok(buffer, " "); 
+		char *sec_part = strtok(NULL, " ");
+
 		//write from the buffer into the socket
 		n = write(sockfd, buffer, strlen(buffer));
 
