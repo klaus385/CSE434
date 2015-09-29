@@ -4,7 +4,7 @@
  * Semester: Fall 2015
  * Project Part: 2
  * Time Spent: 8 hours
- * File Name: CSE434_TCP_Client.c
+ * File Name: client.c
  **********************************************/
 
 #include "client.h"
@@ -34,6 +34,8 @@ int main (int argc, char *argv[])
 	int clientno; //clientno stores the client number
 	int portno; //portno stores the port number on which the server accepts the connections.
 	int n;
+	int filename
+	int op
 
 	//serv_addr will contain the address of the server
 	struct sockaddr_in serv_addr;
@@ -59,8 +61,8 @@ int main (int argc, char *argv[])
 		error("ERROR: Need three arguments.");
 
     	//made changes
-	clientno = atoi(argv[2]);
-	portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
+	//clientno = atoi(argv[2]);
+	//portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
 
 
 	//create socket
@@ -96,7 +98,7 @@ int main (int argc, char *argv[])
            server->h_length);
 
 	//contain the port number
-	serv_addr.sin_port = htons(portno);
+	serv_addr.sin_port = htons(atoi(argv[3]));
 
 	//connect is callled by the client to establish connection to the server
 	//takes 3 argments: socket file descripter,address of the host that it wants to connect to, and the size of this address
@@ -118,8 +120,9 @@ int main (int argc, char *argv[])
 		memset(buffer, 0, sizeof(buffer));
 		
 		//set buffer to the message entered on console at client end for a maximum of 255 characters
-		fgets(buffer, 255, stdin);
-
+		//fgets(buffer, 255, stdin);
+		filename = argv[1];
+		op = argv[2];
 		//write from the buffer into the socket
 		n = write(sockfd, buffer, strlen(buffer));
 
@@ -141,17 +144,15 @@ int main (int argc, char *argv[])
 		//close connections using file descriptrs
 		//close(sockfd);
 
-
-		//open file to read
-		
-		
 		memset(buffer, 0, sizeof(buffer));
 		fgets(buffer, 255, stdin);
 		if(buffer[0] == 'N')
 		{
 			return 0;
+			close(sockfd);
 		}
 	}
-	
+	close(sockfd);
 	return 0;
+
 }
