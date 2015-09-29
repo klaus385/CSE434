@@ -34,8 +34,7 @@ int main (int argc, char *argv[])
 	int clientno; //clientno stores the client number
 	int portno; //portno stores the port number on which the server accepts the connections.
 	int n;
-	int filename
-	int op
+	
 
 	//serv_addr will contain the address of the server
 	struct sockaddr_in serv_addr;
@@ -56,13 +55,15 @@ int main (int argc, char *argv[])
 	struct hostent *server;
 
 	char buffer[1024];
+	char buff[1024];
+	char text[1024];
 
 	if (argc != 4)
 		error("ERROR: Need three arguments.");
 
     	//made changes
-	//clientno = atoi(argv[2]);
-	//portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
+	clientno = atoi(argv[2]);
+	portno = atoi(argv[3]); //atoi() function can be used to convert port number from string to int
 
 
 	//create socket
@@ -98,7 +99,7 @@ int main (int argc, char *argv[])
            server->h_length);
 
 	//contain the port number
-	serv_addr.sin_port = htons(atoi(argv[3]));
+	serv_addr.sin_port = htons(portno);
 
 	//connect is callled by the client to establish connection to the server
 	//takes 3 argments: socket file descripter,address of the host that it wants to connect to, and the size of this address
@@ -121,9 +122,30 @@ int main (int argc, char *argv[])
 		
 		//set buffer to the message entered on console at client end for a maximum of 255 characters
 		fgets(buffer, 255, stdin);
-		char *first_part = strtok(buffer, " "); 
-		char *sec_part = strtok(NULL, " ");
+		char *filename = strtok(buffer, ","); 
+		char *operation = strtok(NULL, " ");
 
+		FILE *fp;
+		fp = fopen(filename, operation);
+
+		if(operation[0] == 'r')
+		{
+			fgets(buff, 1084, fp);
+			fprintf(fp, "This is the file...\n");
+		}
+		else if(operation[0] == 'w')
+		{
+			printf("Enter the what you want written: ");
+			fgets(text,1024, fp);
+			fputs(text, fp);
+
+		}
+		else
+		{
+			printf("ERROR not the right operation\n");
+		}
+
+		fclose(fp);
 		//write from the buffer into the socket
 		n = write(sockfd, buffer, strlen(buffer));
 
