@@ -116,23 +116,25 @@ int main (int argc, char *argv[])
 
 	while(1)	
 	{
-		printf("Please enter the file name and mode of operation: ");
+		printf("Please enter the file name and mode of operation:(filename operation(r or w)) ");
 		//After a connection a client has succesfully connected to the server initilize buffer using bzero()
 		memset(buffer, 0, sizeof(buffer));
 		
 		//set buffer to the message entered on console at client end for a maximum of 255 characters
 		fgets(buffer, 255, stdin);
-		char *filename = strtok(buffer, ","); 
+		char *filename = strtok(buffer, " "); 
 		char *operation = strtok(NULL, " ");
 
 		FILE *fp;
 		fp = fopen(filename, operation);
 
+		//READ FILE
 		if(operation[0] == 'r')
 		{
 			fgets(buff, 1084, fp);
 			fprintf(fp, "This is the file...\n");
 		}
+		//WRITE FILE
 		else if(operation[0] == 'w')
 		{
 			printf("Enter the what you want written: ");
@@ -140,6 +142,7 @@ int main (int argc, char *argv[])
 			fputs(text, fp);
 
 		}
+		//ELSE
 		else
 		{
 			printf("ERROR not the right operation\n");
