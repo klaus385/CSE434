@@ -30,10 +30,13 @@ int main (int argc, char *argv[])
 	int i; // Used in for loop 
 	int closed = 0; // Keeps track if the connected was closed due to duplicate client
 	int cid = 0; // Keeps track of where the client id is stored in the array
-	int client_id[25]; // An inefficient but easy way to store up to 25 client ID numbers
+	int client_id[25]; // Allows for only up to 25 client ids to be stored
 	char buffer[256]; // Characters read from the socket connection
 	struct sockaddr_in server_addr, client_addr; // Structure for handling iternet addresses - see below
 	socklen_t client_addr_sz; // Size of the address of the client (needed for accept()) - found in sys/socket.h
+	// New variables for implementing FTP
+	int pid_track = 0; // Keep track of the current number of clients
+	struct client_list cl;
 	
 	/*******************************************************************
 	 * Found in netinet/in.h
@@ -155,7 +158,6 @@ int main (int argc, char *argv[])
 		// Throw an error if the connection was unsuccessful
 		if (new_socket_fd == -1)
 		{
-			fprintf(stderr, "error code: %s", strerror(new_socket_fd));
 	 		error("ERROR: Could not accept client. Exiting now.");
 		}
 		closed = 0;
@@ -168,8 +170,6 @@ int main (int argc, char *argv[])
 			error("ERROR: Could not read client number. Exiting now.");
 		}
 		
-	//	printf("Client number is %s\n", buffer);
-
 		for (i = 0; i < 25; ++i)
 		{
 			if (atoi(buffer) == client_id[i])
@@ -189,9 +189,10 @@ int main (int argc, char *argv[])
 		 *	returned to the parent and a 0 is returned to the child
 		 *	else, -1 is returned to parent
 		 *******************************************************************/
-		// If the connection was successful, create a child process to handle the client
-		// and check if child process was created
-		if (closed == 0)
+		// If the connection was successful AND the number of clients using the server
+		// is less than five, then create a child process to handle the client and
+		// check if child process was created
+		if (closed == 0 && pid_track < 5)
 		{
 			if ((pid = fork()) == -1)
 			{
@@ -199,6 +200,7 @@ int main (int argc, char *argv[])
 			}
 			else if (pid == 0)
 			{
+				++pid_track;
 				/******************************************************************
 				 * int close (int fd);
 				 * fd
@@ -216,22 +218,42 @@ int main (int argc, char *argv[])
 					error("ERROR: Could not close listening socket. Exiting now.");
 				}
 				
-				memset(buffer, 0, sizeof(buffer));
-				while (read(new_socket_fd, buffer, sizeof(buffer)) != -1)
-				{
-					if (buffer[0] != '\0' )
+				while (cl.cont == 'Y') {
+					memset(buffer, 0, sizeof(buffer));
+					// Read in file name and option
+					if (read(new_socket_fd, buffer, sizeof(buffer)) == -1)
 					{
-						printf("Client (%d) says: %s", client_id[cid], buffer);
-				
-						if (rw_num = write(new_socket_fd, "Heard you loud and clear.", 25) == -1)
-						{
-							error("ERROR: Could not write to client. Exiting now.");
-						}
+						error("ERROR: Could not read from client. Exiting now.");
+					}
+					else
+					{
+						// Parse the read in buffer
+						cl.filename = strtok(buffer, ", ");
+						cl.op = strtok(NULL, ", ");
 
-						memset(buffer, 0, sizeof(buffer));
+						// Open the file for the specified operation
+						if ((cl.fp = fopen(cl.filename, cl.op)) != NULL)
+						{
+							// Perform FTP operations here
+						}
+						else
+						{
+							printf("Could not open file.\n");
+						}
+					}
+					// Ask if client wants to make another request
+					if (write(new_socket_fd, "Would you like another request (Y/N)?", 40) == -1)
+					{
+						error("ERROR: Could not write to client. Exiting now.");
+					}
+
+					// Read answer from client
+					if (read(new_socket_fd, cl.cont, sizeof(cl.cont)) != -1)
+					{
+						error("ERROR: Could not read from client. Exiting now.");
 					}
 				}
-				
+	
 				++cid;
 			}
 

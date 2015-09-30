@@ -18,6 +18,14 @@
 #include <sys/socket.h> // includes structure definitions for socket types
 #include <netinet/in.h> // contains structures/constants for internet domain addresses
 
+struct client_list 
+{
+	char *filename; // char array for the filename sent by client
+	char op;   // File operation to perform on filename
+	char cont; // Used for if the client wants to make another request (Y or N)
+	FILE *fp;  // File pointer
+};
+
 void error (char *msg);
 
 #endif /* _CONCURRENTSERVER_H_ */
